@@ -16,10 +16,12 @@ class EnemyFish extends Fish {
             startX = -width;
         }
 
-        super(startX, y, width, height, `./images/Enemies/${direction}/${imgSrc}`);
+        const imagePath = `./images/Enemies/${direction}/${imgSrc}`;
+        super(startX, y, width, height, imagePath);
         
         this.direction = direction;
         this.directionVertical = directionVertical;
+        this.imgSrc = imagePath;
         this.speedX = 3 * level;
         this.speedY = 0.3 * level;
     }
