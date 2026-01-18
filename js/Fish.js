@@ -1,5 +1,5 @@
 
-class Fish {
+export default class Fish {
     constructor(x, y, width, height, imageSrc) {
         if (this.constructor === Fish) throw new Error("Abstract Class");
 
@@ -16,7 +16,7 @@ class Fish {
         this.element.style.width = this.width + 'px';
         this.element.style.height = this.height + 'px';
         
-        document.body.appendChild(this.element);
+        document.querySelector("#game").appendChild(this.element);
     }
 
     render() {
