@@ -12,13 +12,14 @@ class Fish {
         this.element = document.createElement('img');
         this.element.src = this.imageSrc;
         this.element.style.position = 'absolute';
+        this.element.style.pointerEvents = "none";
         this.element.style.width = this.width + 'px';
         this.element.style.height = this.height + 'px';
         
         document.body.appendChild(this.element);
     }
 
-    moveFishes() {
+    render() {
         this.element.style.left = `${this.x}px`;
         this.element.style.top = `${this.y}px`;
         
@@ -26,7 +27,26 @@ class Fish {
         this.element.style.height = `${this.height}px`;
     }
 
+    isColliding(other) {
+        return (
+            this.x < other.x + other.width &&
+            this.x + this.width > other.x &&
+            this.y < other.y + other.height &&
+            this.y + this.height > other.y
+        );
+    }
+
     destroy() {
         this.element.remove();
     }
 }
+
+
+
+
+
+
+
+
+
+
