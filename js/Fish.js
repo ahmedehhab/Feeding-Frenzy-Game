@@ -10,20 +10,41 @@ export default class Fish {
 
         this.element = document.createElement('img');
         this.element.src = this.imageSrc;
-        this.element.style.position = 'absolute';
+        this.element.className = 'fish';
+        this.element.style.position = 'fixed';
         this.element.style.pointerEvents = 'none';
         this.element.style.width = this.width + 'px';
         this.element.style.height = this.height + 'px';
+        this.element.style.zIndex = '1000';
+        this.element.style.imageRendering = 'auto';
+        this.element.style.display = 'block';
 
-        document.querySelector('#game').appendChild(this.element);
+        const container = document.querySelector('#game-container') || document.querySelector('#game');
+        container.appendChild(this.element);
+        
+        console.log('Fish created:', {
+            src: this.imageSrc,
+            x: this.x,
+            y: this.y,
+            width: this.width,
+            height: this.height
+        });
+        
+        // Force a render
+        setTimeout(() => this.render(), 0);
     }
 
     render() {
+        if (!this.element) return;
+        
         this.element.style.left = `${this.x}px`;
         this.element.style.top = `${this.y}px`;
         this.element.style.width = `${this.width}px`;
         this.element.style.height = `${this.height}px`;
         this.element.style.transform = this.direction < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+        this.element.style.zIndex = '1000';
+        this.element.style.display = 'block';
+        this.element.style.position = 'fixed';
     }
 
     isColliding(other) {
@@ -36,7 +57,9 @@ export default class Fish {
     }
 
     destroy() {
-        this.element.remove();
+        if (this.element && this.element.parentNode) {
+            this.element.remove();
+        }
     }
 
     openMouth() {

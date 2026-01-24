@@ -13,6 +13,7 @@ export default class Spawner {
 
     selectEnemyType(playerLevel) {
         const maxLevel = playerLevel + 1;
+       
         const availableTypes = this.enemyTypes.filter(t => t.level <= maxLevel);
         const totalWeight = availableTypes.reduce((sum, t) => sum + t.spawnWeight, 0);
 
