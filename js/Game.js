@@ -71,34 +71,57 @@ export default class Game {
     }
   }
   
-  update() {
+ update() {
     this.player.update(this.mouseX, this.mouseY);
     
-    // Spawn new enemies
     const currentTime = Date.now();
     if (currentTime - this.lastSpawnTime >= this.spawnInterval) {
-      this.spawnEnemy();
-      this.lastSpawnTime = currentTime;
+        const newEnemy = this.spawner.spawn(this.player.level);
+        if (newEnemy) this.enemies.push(newEnemy);
+        this.lastSpawnTime = currentTime;
     }
 
-    // Update all enemies
     for (let i = this.enemies.length - 1; i >= 0; i--) {
-      this.enemies[i].update();
-    }
-    
-    // Clean up enemies that left the screen
-    this.cleanupOffscreenEnemies();
+        const enemy = this.enemies[i];
+        enemy.update();
 
-    // Spawn APEX when player reaches Level 3
-    if (this.player.level === CONFIG.SIZE.LARGE && !this.apexSpawned) {
-      this.apexSpawned = true;
-      const apex = this.spawner.spawnApex();
-      this.enemies.push(apex);
+        if (this.player.isColliding(enemy)) {
+            if (this.player.level >= enemy.level) {
+                this.player.grow();  
+                enemy.destroy();     
+                this.enemies.splice(i, 1); 
+                continue; 
+            } else {
+                this.state = 'GAMEOVER';
+                this.handleGameOver();
+                return; 
+            }
+        }
+
+        if (this.isOffscreen(enemy)) {
+            enemy.destroy();
+            this.enemies.splice(i, 1);
+        }
     }
-    
+
+    if (this.player.level === CONFIG.SIZE.LARGE && !this.apexSpawned) {
+        this.apexSpawned = true;
+        const apex = this.spawner.spawnApex();
+        this.enemies.push(apex);
+    }
+    this.updateProgressBar();
+
     this.checkPlayerCollisions();
-    this.checkEnemyCollisions();
-  }
+}
+
+isOffscreen(enemy) {
+    return (
+        enemy.x < -200 || 
+        enemy.x > CONFIG.CANVAS_WIDTH + 200 ||
+        enemy.y < -100 ||
+        enemy.y > CONFIG.CANVAS_HEIGHT + 100
+    );
+}
 
   cleanupOffscreenEnemies() {
     for (let i = this.enemies.length - 1; i >= 0; i--) {

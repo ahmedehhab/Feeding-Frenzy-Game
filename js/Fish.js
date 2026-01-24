@@ -26,14 +26,20 @@ export default class Fish {
         this.element.style.transform = this.direction < 0 ? 'scaleX(-1)' : 'scaleX(1)';
     }
 
-    isColliding(other) {
-        return (
-            this.x < other.x + other.width &&
-            this.x + this.width > other.x &&
-            this.y < other.y + other.height &&
-            this.y + this.height > other.y
-        );
-    }
+isColliding(other) {
+    const offsetW = this.width * 0.2;
+    const offsetH = this.height * 0.2;
+
+    const otherOffsetW = other.width * 0.2;
+    const otherOffsetH = other.height * 0.2;
+
+    return (
+        this.x + offsetW < other.x + other.width - otherOffsetW &&
+        this.x + this.width - offsetW > other.x + otherOffsetW &&
+        this.y + offsetH < other.y + other.height - otherOffsetH &&
+        this.y + this.height - offsetH > other.y + otherOffsetH
+    );
+}
 
     destroy() {
         this.element.remove();
