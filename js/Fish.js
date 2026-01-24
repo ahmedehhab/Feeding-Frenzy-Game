@@ -27,17 +27,29 @@ export default class Fish {
     }
 
 isColliding(other) {
-    const offsetW = this.width * 0.2;
-    const offsetH = this.height * 0.2;
+    const attackBoxWidth = this.width * 0.3;  
+    const attackBoxHeight = this.height * 0.4; 
+    
+    let attackBoxX;
+    const attackBoxY = this.y + (this.height / 2) - (attackBoxHeight / 2);
 
-    const otherOffsetW = other.width * 0.2;
-    const otherOffsetH = other.height * 0.2;
+    if (this.direction === 1 || this.direction === 'right') {
+        attackBoxX = this.x + this.width - attackBoxWidth; 
+    } else {
+        attackBoxX = this.x;
+    }
+
+    const padding = 0.15; 
+    const targetX = other.x + (other.width * padding);
+    const targetY = other.y + (other.height * padding);
+    const targetW = other.width * (1 - (padding * 2));
+    const targetH = other.height * (1 - (padding * 2));
 
     return (
-        this.x + offsetW < other.x + other.width - otherOffsetW &&
-        this.x + this.width - offsetW > other.x + otherOffsetW &&
-        this.y + offsetH < other.y + other.height - otherOffsetH &&
-        this.y + this.height - offsetH > other.y + otherOffsetH
+        attackBoxX < targetX + targetW &&
+        attackBoxX + attackBoxWidth > targetX &&
+        attackBoxY < targetY + targetH &&
+        attackBoxY + attackBoxHeight > targetY
     );
 }
 
