@@ -27,6 +27,25 @@ this.spawnStats = { 0:0, 1:0, 2:0, 3:0, 4:0 }
     this.state = 'STORY'; // Start with story
     this.mouseX = this.width / 2;
     this.mouseY = this.height / 2;
+
+    this.highScoreKey = 'feeding-frenzy-high-score';
+    this.highScore = this.loadHighScore();
+
+    this.eatSound = new Audio('assets/audio/eat.mp3');
+    this.eatSound.preload = 'auto';
+
+    this.gameOverSound = new Audio('assets/audio/game_over.mp3');
+    this.gameOverSound.preload = 'auto';
+
+    this.winSound = new Audio('assets/audio/congratulation.wav');
+    this.winSound.preload = 'auto';
+
+    this.bombSpawnSound = new Audio('assets/audio/bomb.mp3');
+    this.bombSpawnSound.preload = 'auto';
+
+    this.backgroundMusic = new Audio('assets/audio/BackgroundMusic.mp3');
+    this.backgroundMusic.preload = 'auto';
+    this.backgroundMusic.loop = true;
     
     const playerImages = [
       'assets/characters/hero1_right_closed.png',
@@ -54,6 +73,67 @@ this.spawnStats = { 0:0, 1:0, 2:0, 3:0, 4:0 }
     this.setupStory();
     this.setupEndScreen();
   }
+
+  playEatSound() {
+    if (!this.eatSound) return;
+    this.eatSound.currentTime = 0;
+    this.eatSound.play().catch(() => {});
+  }
+
+  loadHighScore() {
+    try {
+      const storedScore = localStorage.getItem(this.highScoreKey);
+      const score = Number(storedScore);
+      //  Validation: If it's a valid number, use it. If not (or if it's null), return 0.
+      return Number.isFinite(score) ? score : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  saveHighScore(score) {
+    try {
+      localStorage.setItem(this.highScoreKey, String(score));
+    } catch {
+      // Ignore storage errors maybe because of browser settings (private mode / blocked storage)
+    }
+  }
+
+  updateHighScore() {
+    if (this.player.score > this.highScore) {
+      this.highScore = this.player.score;
+      this.saveHighScore(this.highScore);
+    }
+    return this.highScore;
+  }
+
+  playGameOverSound() {
+    if (!this.gameOverSound) return;
+    this.gameOverSound.currentTime = 0;
+    this.gameOverSound.play().catch(() => {});
+  }
+
+  playWinSound() {
+    if (!this.winSound) return;
+    this.winSound.currentTime = 0;
+    this.winSound.play().catch(() => {});
+  }
+
+  playBombSpawnSound() {
+    if (!this.bombSpawnSound) return;
+    this.bombSpawnSound.currentTime = 0;
+    this.bombSpawnSound.play().catch(() => {});
+  }
+
+  startBackgroundMusic() {
+    if (!this.backgroundMusic) return;
+    this.backgroundMusic.play().catch(() => {});
+  }
+
+  stopBackgroundMusic() {
+    if (!this.backgroundMusic) return;
+    this.backgroundMusic.pause();
+  }
 spawnShark() {
     if (this.sharks.length >= CONFIG.SHARK.MAX_COUNT) return;
     if (this.frameCount % CONFIG.SHARK.SPAWN_INTERVAL !== 0) return;
@@ -65,7 +145,8 @@ spawnShark() {
 
 spawnBomb() {
     if (this.frameCount % CONFIG.BOMB.SPAWN_INTERVAL !== 0) return;
-        const bomb = new Bomb(); 
+    const bomb = new Bomb();
+    this.playBombSpawnSound();
     this.bombs.push(bomb);
 }
   
@@ -73,6 +154,7 @@ spawnBomb() {
     this.updateStorySlide();
     
     document.getElementById('next-btn').addEventListener('click', () => {
+      this.startBackgroundMusic();
       this.storySlide++;
       if (this.storySlide < CONFIG.STORY_SLIDES.length) {
         this.updateStorySlide();
@@ -87,6 +169,7 @@ spawnBomb() {
     });
     
     document.getElementById('skip-btn').addEventListener('click', () => {
+      this.startBackgroundMusic();
       this.showLoadingTransition();
     });
   }
@@ -372,6 +455,7 @@ isOffscreen(enemy) {
                 this.enemies.splice(i, 1);
                 
                 const oldLevel = this.player.level;
+                this.playEatSound();
                 this.player.grow();
                 
                 // Show thought bubble when level changes
@@ -461,15 +545,21 @@ isOffscreen(enemy) {
 
   gameOver(message = "GAME OVER") { 
     this.state = 'GAME_OVER';
+    const highScore = this.updateHighScore();
+    this.stopBackgroundMusic();
+    this.playGameOverSound();
     this.player.hide();
     this.hideThoughtBubble();
     document.getElementById('end-title').textContent = 'GAME OVER';
-    document.getElementById('end-msg').innerHTML = `${message}<br>Final Score: ${this.player.score}`;
+    document.getElementById('end-msg').innerHTML = `${message}<br>Final Score: ${this.player.score}<br>High Score: ${highScore}`;
     document.getElementById('end-screen').classList.remove('hidden');
 }
 
   win() {
     this.state = 'WIN';
+    const highScore = this.updateHighScore();
+    this.stopBackgroundMusic();
+    this.playWinSound();
     
     // Show VICTORY announcement
     const announcement = document.createElement('div');
@@ -480,7 +570,7 @@ isOffscreen(enemy) {
     setTimeout(() => {
       announcement.remove();
       document.getElementById('end-title').textContent = 'VICTORY!';
-      document.getElementById('end-msg').innerHTML = `You are the Ocean King!<br>Final Score: ${this.player.score}`;
+      document.getElementById('end-msg').innerHTML = `You are the Ocean King!<br>Final Score: ${this.player.score}<br>High Score: ${highScore}`;
       document.getElementById('end-screen').classList.remove('hidden');
     }, 2000);
   }
@@ -507,9 +597,11 @@ isOffscreen(enemy) {
   updateUI() {
     const scoreElement = document.getElementById('score-val');
     const levelElement = document.getElementById('level-name');
+    const highScoreElement = document.getElementById('high-score-val');
     
     if (scoreElement) scoreElement.textContent = this.player.score;
     if (levelElement) levelElement.textContent = CONFIG.LEVEL_NAMES[this.player.level] || "Explorer";
+    if (highScoreElement) highScoreElement.textContent = this.highScore;
     
     const targetLevel = Math.min(this.player.level, 3);
     const targetData = this.spawner.getEnemyByLevel(targetLevel);

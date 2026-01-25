@@ -17,10 +17,19 @@ export default class Player extends Fish {
         this.score = 0;
         this.speed = CONFIG.PLAYER.ACCELERATION;
         this.direction = CONFIG.DIRECTION.RIGHT;
+
+        this.levelUpSound = new Audio('assets/audio/level_up.wav');
+        this.levelUpSound.preload = 'auto';
         
         // Store initial values for reset
         this.initialX = x;
         this.initialY = y;
+    }
+
+    playLevelUpSound() {
+        if (!this.levelUpSound) return;
+        this.levelUpSound.currentTime = 0;
+        this.levelUpSound.play().catch(() => {});
     }
 
     update(mouthX, mouthY) {
@@ -56,6 +65,7 @@ export default class Player extends Fish {
             this.element.src = this.images[this.level];
             
             // Show level announcement
+            this.playLevelUpSound();
             this.showLevelAnnouncement(this.level + 1);
         } else {
             this.width += 1;
