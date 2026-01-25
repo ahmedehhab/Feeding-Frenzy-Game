@@ -16,6 +16,19 @@ this.spawnStats = { 0:0, 1:0, 2:0, 3:0, 4:0 }
     this.state = 'STORY'; // Start with story
     this.mouseX = this.width / 2;
     this.mouseY = this.height / 2;
+
+    this.eatSound = new Audio('assets/audio/eat.mp3');
+    this.eatSound.preload = 'auto';
+
+    this.gameOverSound = new Audio('assets/audio/game_over.mp3');
+    this.gameOverSound.preload = 'auto';
+
+    this.bombSpawnSound = new Audio('assets/audio/bomb.mp3');
+    this.bombSpawnSound.preload = 'auto';
+
+    this.backgroundMusic = new Audio('assets/audio/BackgroundMusic.mp3');
+    this.backgroundMusic.preload = 'auto';
+    this.backgroundMusic.loop = true;
     
     const playerImages = [
       'assets/characters/hero1_right_closed.png',
@@ -43,6 +56,34 @@ this.spawnStats = { 0:0, 1:0, 2:0, 3:0, 4:0 }
     this.setupStory();
     this.setupEndScreen();
   }
+
+  playEatSound() {
+    if (!this.eatSound) return;
+    this.eatSound.currentTime = 0;
+    this.eatSound.play().catch(() => {});
+  }
+
+  playGameOverSound() {
+    if (!this.gameOverSound) return;
+    this.gameOverSound.currentTime = 0;
+    this.gameOverSound.play().catch(() => {});
+  }
+
+  playBombSpawnSound() {
+    if (!this.bombSpawnSound) return;
+    this.bombSpawnSound.currentTime = 0;
+    this.bombSpawnSound.play().catch(() => {});
+  }
+
+  startBackgroundMusic() {
+    if (!this.backgroundMusic) return;
+    this.backgroundMusic.play().catch(() => {});
+  }
+
+  stopBackgroundMusic() {
+    if (!this.backgroundMusic) return;
+    this.backgroundMusic.pause();
+  }
 spawnShark() {
     if (this.sharks.length >= CONFIG.SHARK.MAX_COUNT) return;
     if (this.frameCount % CONFIG.SHARK.SPAWN_INTERVAL !== 0) return;
@@ -54,7 +95,8 @@ spawnShark() {
 
 spawnBomb() {
     if (this.frameCount % CONFIG.BOMB.SPAWN_INTERVAL !== 0) return;
-        const bomb = new Bomb(); 
+    const bomb = new Bomb();
+    this.playBombSpawnSound();
     this.bombs.push(bomb);
 }
   
@@ -62,6 +104,7 @@ spawnBomb() {
     this.updateStorySlide();
     
     document.getElementById('next-btn').addEventListener('click', () => {
+      this.startBackgroundMusic();
       this.storySlide++;
       if (this.storySlide < CONFIG.STORY_SLIDES.length) {
         this.updateStorySlide();
@@ -76,6 +119,7 @@ spawnBomb() {
     });
     
     document.getElementById('skip-btn').addEventListener('click', () => {
+      this.startBackgroundMusic();
       this.showLoadingTransition();
     });
   }
@@ -306,6 +350,7 @@ isOffscreen(enemy) {
             if (this.player.level >= enemy.level) {
                 enemy.destroy();
                 this.enemies.splice(i, 1);
+                this.playEatSound();
                 this.player.grow();
                 this.updateProgressBar();
                 this.updateUI();
@@ -388,6 +433,8 @@ isOffscreen(enemy) {
 
   gameOver(message = "GAME OVER") { 
     this.state = 'GAME_OVER';
+    this.stopBackgroundMusic();
+    this.playGameOverSound();
     this.player.hide();
     document.getElementById('end-title').textContent = 'GAME OVER';
     document.getElementById('end-msg').innerHTML = `${message}<br>Final Score: ${this.player.score}`;
@@ -396,6 +443,8 @@ isOffscreen(enemy) {
 
   win() {
     this.state = 'WIN';
+    this.stopBackgroundMusic();
+    this.playGameOverSound();
     
     // Show VICTORY announcement
     const announcement = document.createElement('div');
