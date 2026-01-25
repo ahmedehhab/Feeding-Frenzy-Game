@@ -26,6 +26,9 @@ this.spawnStats = { 0:0, 1:0, 2:0, 3:0, 4:0 }
     this.gameOverSound = new Audio('assets/audio/game_over.mp3');
     this.gameOverSound.preload = 'auto';
 
+    this.winSound = new Audio('assets/audio/congratulation.wav');
+    this.winSound.preload = 'auto';
+
     this.bombSpawnSound = new Audio('assets/audio/bomb.mp3');
     this.bombSpawnSound.preload = 'auto';
 
@@ -97,6 +100,12 @@ this.spawnStats = { 0:0, 1:0, 2:0, 3:0, 4:0 }
     if (!this.gameOverSound) return;
     this.gameOverSound.currentTime = 0;
     this.gameOverSound.play().catch(() => {});
+  }
+
+  playWinSound() {
+    if (!this.winSound) return;
+    this.winSound.currentTime = 0;
+    this.winSound.play().catch(() => {});
   }
 
   playBombSpawnSound() {
@@ -476,7 +485,7 @@ isOffscreen(enemy) {
     this.state = 'WIN';
     const highScore = this.updateHighScore();
     this.stopBackgroundMusic();
-    this.playGameOverSound();
+    this.playWinSound();
     
     // Show VICTORY announcement
     const announcement = document.createElement('div');
