@@ -17,6 +17,9 @@ this.spawnStats = { 0:0, 1:0, 2:0, 3:0, 4:0 }
     this.mouseX = this.width / 2;
     this.mouseY = this.height / 2;
 
+    this.highScoreKey = 'feeding-frenzy-high-score';
+    this.highScore = this.loadHighScore();
+
     this.eatSound = new Audio('assets/audio/eat.mp3');
     this.eatSound.preload = 'auto';
 
@@ -61,6 +64,33 @@ this.spawnStats = { 0:0, 1:0, 2:0, 3:0, 4:0 }
     if (!this.eatSound) return;
     this.eatSound.currentTime = 0;
     this.eatSound.play().catch(() => {});
+  }
+
+  loadHighScore() {
+    try {
+      const storedScore = localStorage.getItem(this.highScoreKey);
+      const score = Number(storedScore);
+      //  Validation: If it's a valid number, use it. If not (or if it's null), return 0.
+      return Number.isFinite(score) ? score : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  saveHighScore(score) {
+    try {
+      localStorage.setItem(this.highScoreKey, String(score));
+    } catch {
+      // Ignore storage errors maybe because of browser settings (private mode / blocked storage)
+    }
+  }
+
+  updateHighScore() {
+    if (this.player.score > this.highScore) {
+      this.highScore = this.player.score;
+      this.saveHighScore(this.highScore);
+    }
+    return this.highScore;
   }
 
   playGameOverSound() {
@@ -433,16 +463,18 @@ isOffscreen(enemy) {
 
   gameOver(message = "GAME OVER") { 
     this.state = 'GAME_OVER';
+    const highScore = this.updateHighScore();
     this.stopBackgroundMusic();
     this.playGameOverSound();
     this.player.hide();
     document.getElementById('end-title').textContent = 'GAME OVER';
-    document.getElementById('end-msg').innerHTML = `${message}<br>Final Score: ${this.player.score}`;
+    document.getElementById('end-msg').innerHTML = `${message}<br>Final Score: ${this.player.score}<br>High Score: ${highScore}`;
     document.getElementById('end-screen').classList.remove('hidden');
 }
 
   win() {
     this.state = 'WIN';
+    const highScore = this.updateHighScore();
     this.stopBackgroundMusic();
     this.playGameOverSound();
     
@@ -455,7 +487,7 @@ isOffscreen(enemy) {
     setTimeout(() => {
       announcement.remove();
       document.getElementById('end-title').textContent = 'VICTORY!';
-      document.getElementById('end-msg').innerHTML = `You are the Ocean King!<br>Final Score: ${this.player.score}`;
+      document.getElementById('end-msg').innerHTML = `You are the Ocean King!<br>Final Score: ${this.player.score}<br>High Score: ${highScore}`;
       document.getElementById('end-screen').classList.remove('hidden');
     }, 2000);
   }
@@ -482,9 +514,11 @@ isOffscreen(enemy) {
   updateUI() {
     const scoreElement = document.getElementById('score-val');
     const levelElement = document.getElementById('level-name');
+    const highScoreElement = document.getElementById('high-score-val');
     
     if (scoreElement) scoreElement.textContent = this.player.score;
     if (levelElement) levelElement.textContent = CONFIG.LEVEL_NAMES[this.player.level] || "Explorer";
+    if (highScoreElement) highScoreElement.textContent = this.highScore;
     
     const targetLevel = Math.min(this.player.level, 3);
     const targetData = this.spawner.getEnemyByLevel(targetLevel);
