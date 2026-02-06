@@ -263,15 +263,27 @@ export default class Game {
     document.getElementById("end-screen").classList.add("hidden");
     document.getElementById("endless-btn").classList.add("hidden");
 
+    // Clear all dangerous entities for a fresh start
+    this.sharks.forEach((s) => s.destroy());
+    this.bombs.forEach((b) => b.destroy());
+    this.enemies.forEach((e) => e.destroy());
+    this.sharks = [];
+    this.bombs = [];
+    this.enemies = [];
+
     // Set endless mode flag
     this.isEndlessMode = true;
     this.endlessStartScore = this.player.score;
-    this.endlessApexCount = 1; // We already have one Apex from winning
+    this.endlessApexCount = 0;
     this.endlessSpeedMultiplier = 1.0;
 
     // Reset some properties but keep player state
     this.frameCount = 0;
     this.state = "PLAYING";
+
+    // Reset player position to center for safety
+    this.player.x = this.width / 2;
+    this.player.y = this.height / 2;
 
     // Show player
     this.player.show();
@@ -293,9 +305,13 @@ export default class Game {
       "linear-gradient(90deg, #ff6b6b, #ffa500)";
     this.progressFill.style.width = "100%";
 
-    // Spawn initial Apex for endless
-    this.enemies.push(this.spawner.spawnApex());
-    this.endlessApexCount++;
+    // Spawn initial Apex for endless (after a short delay for safety)
+    setTimeout(() => {
+      if (this.state === "PLAYING" && this.isEndlessMode) {
+        this.enemies.push(this.spawner.spawnApex());
+        this.endlessApexCount++;
+      }
+    }, 1000);
 
     this.gameLoop();
   }
@@ -438,6 +454,13 @@ export default class Game {
 
   update() {
     if (this.state !== "PLAYING") return;
+
+    // Check win condition FIRST - before any collisions can kill the player
+    // This prevents the race condition where shark can kill you in the same frame you win
+    if (!this.isEndlessMode && this.player.score >= CONFIG.THRESHOLD.WIN) {
+      this.win();
+      return;
+    }
 
     // Progressive difficulty for Endless Mode
     if (this.isEndlessMode) {
