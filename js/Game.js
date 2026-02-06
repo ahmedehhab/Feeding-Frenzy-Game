@@ -175,7 +175,7 @@ export default class Game {
     if (!this.backgroundMusic) return;
     this.backgroundMusic.pause();
   }
-  
+
   spawnShark() {
     // More sharks in endless mode (3x more frequent)
     const maxSharks = this.isEndlessMode ? 2 : CONFIG.SHARK.MAX_COUNT;
@@ -583,6 +583,13 @@ export default class Game {
       const enemy = this.enemies[i];
 
       if (this.player.isColliding(enemy)) {
+        // Apex is invincible - player can NEVER eat it
+        if (enemy.isApex) {
+          enemy.openMouth();
+          setTimeout(() => this.gameOver("You were eaten by the Apex!"), 100);
+          break;
+        }
+
         if (this.player.level >= enemy.level) {
           // Spawn particle effects
           spawnEatEffect(

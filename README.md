@@ -25,13 +25,13 @@ A classic fish-eat-fish browser game inspired by the original Feeding Frenzy. Co
 
 ### Enemy Types
 
-| Level | Fish         | Description                   |
-| ----- | ------------ | ----------------------------- |
-| 0     | Tiny Fry     | Smallest fish, easy prey      |
-| 1     | Swift Minnow | Fast and slippery             |
-| 2     | Spotted Reef | Larger, more dangerous        |
-| 3     | Hunter       | Predator fish                 |
-| Boss  | Apex         | Ultimate challenge at level 3 |
+| Level | Fish         | Description                               |
+| ----- | ------------ | ----------------------------------------- |
+| 0     | Tiny Fry     | Smallest fish, easy prey                  |
+| 1     | Swift Minnow | Fast and slippery                         |
+| 2     | Spotted Reef | Larger, more dangerous                    |
+| 3     | Hunter       | Predator fish                             |
+| Boss  | Apex         | **INVINCIBLE** boss - avoid at all costs! |
 
 ### Hazards
 
